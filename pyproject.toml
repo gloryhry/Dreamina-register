@@ -1,0 +1,10 @@
+[project]
+name = "dreamina-register"
+version = "0.1.0"
+description = "Dreamina自动化注册程序"
+requires-python = ">=3.12"
+dependencies = [
+    "DrissionPage>=4.0.0",
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+]
