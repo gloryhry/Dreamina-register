@@ -167,7 +167,7 @@ class DreaminaRegister:
         print(f"已保存: {formatted_sessionid}")
         
         print(f"保存账号信息到{account_file}...")
-        account_info = f"{self.email_address}|{self.password}"
+        account_info = f"{self.email_address}:{self.password}"
         try:
             with open(account_file, "a", encoding="utf-8") as f:
                 f.write(account_info + "\n")

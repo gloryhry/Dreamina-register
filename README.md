@@ -215,11 +215,11 @@ us-xyz789ghi012...
 保存账号信息，每行一组：
 
 ```
-email1@example.com|Password123!
-email2@example.com|SecurePass456@
+email1@example.com:Password123!
+email2@example.com:SecurePass456@
 ```
 
-**格式**：`{邮箱}|{密码}`
+**格式**：`{邮箱}:{密码}`
 
 ## ❓ 常见问题
 
