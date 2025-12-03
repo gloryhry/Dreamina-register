@@ -24,12 +24,15 @@ class DreaminaRegister:
         if self.proxy_url:
             options.set_proxy(self.proxy_url)
         
+        options.set_argument('--blink-settings=imagesEnabled=false')
+        options.set_argument('--disable-images')
+        
         self.page = ChromiumPage(options)
     
     def step_1_to_5(self):
         print("步骤1: 打开Dreamina网站...")
         self.page.get("https://dreamina.capcut.com/ai-tool/home")
-        time.sleep(10)
+        time.sleep(1)
         
         print(f"页面标题: {self.page.title}")
         
@@ -42,7 +45,7 @@ class DreaminaRegister:
         if sign_in_btn:
             print("找到Sign in按钮")
             sign_in_btn.click()
-            time.sleep(1)
+            # time.sleep(1)
         else:
             raise ValueError("无法找到Sign in按钮")
         
@@ -50,7 +53,7 @@ class DreaminaRegister:
         continue_email = self.page.ele("text=Continue with email", timeout=30)
         if continue_email:
             continue_email.click()
-            time.sleep(1)
+            # time.sleep(1)
         else:
             raise ValueError("无法找到Continue with email")
         
@@ -58,7 +61,7 @@ class DreaminaRegister:
         sign_up = self.page.ele("text=Sign up", timeout=30)
         if sign_up:
             sign_up.click()
-            time.sleep(1)
+            # time.sleep(1)
         else:
             raise ValueError("无法找到Sign up")
         
@@ -73,19 +76,19 @@ class DreaminaRegister:
         print("步骤6: 填入邮箱地址...")
         email_input = self.page.ele("@placeholder=Enter email")
         email_input.input(self.email_address)
-        time.sleep(1)
+        # time.sleep(1)
         
         print("步骤7: 生成并填入密码...")
         self.password = generate_password()
         print(f"生成的密码: {self.password}")
         password_input = self.page.ele("@@type=password@@placeholder=Enter password")
         password_input.input(self.password)
-        time.sleep(1)
+        # time.sleep(1)
         
         print("步骤8: 点击Continue按钮...")
         continue_btn = self.page.ele("@text()=Continue", timeout=5)
         continue_btn.click()
-        time.sleep(3)
+        # time.sleep(3)
         
         print("步骤6-8完成")
     
@@ -101,7 +104,7 @@ class DreaminaRegister:
         print("步骤10: 填入验证码...")
         hidden_input = self.page.ele("@@class=lv-input lv-input-size-default@@maxlength=6")
         hidden_input.input(verification_code)
-        time.sleep(3)
+        # time.sleep(3)
         
         print("步骤9-10完成")
     
@@ -110,40 +113,40 @@ class DreaminaRegister:
         year = random.randint(1991, 2004)
         year_input = self.page.ele("@placeholder=Year")
         year_input.input(str(year))
-        time.sleep(1)
+        # time.sleep(1)
         
         print("步骤12: 选择月份...")
         month_selector = self.page.ele("@@class=lv-select-view-input@@placeholder=Month")
         month_selector.click()
-        time.sleep(2)
+        # time.sleep(2)
         
         months = ["January", "February", "March", "April", "May", "June", 
                   "July", "August", "September", "October", "November", "December"]
         selected_month = random.choice(months)
         month_option = self.page.ele(f"text={selected_month}")
         month_option.click()
-        time.sleep(1)
+        # time.sleep(1)
         
         print("步骤13: 选择日期...")
         day_selector = self.page.ele("@@class=lv-select-view-input@@placeholder=Day")
         day_selector.click()
-        time.sleep(2)
+        # time.sleep(2)
         
         day = random.randint(1, 28)
         day_option = self.page.ele(f"text={day}")
         day_option.click()
-        time.sleep(1)
+        # time.sleep(1)
         
         print("步骤14: 点击Next按钮...")
         next_btn = self.page.ele("@text()=Next")
         next_btn.click()
-        time.sleep(5)
+        # time.sleep(5)
         
         print("步骤11-14完成")
     
     def step_15_to_16(self, output_file: str = "key.txt", account_file: str = "account.txt"):
         print("步骤15: 等待页面跳转并获取Cookie...")
-        time.sleep(3)
+        continue_ = self.page.ele("text=What role best describes you?", timeout=30)
         
         cookies = self.page.cookies()
         sessionid = None
@@ -201,5 +204,5 @@ class DreaminaRegister:
             raise
         finally:
             if self.page:
-                time.sleep(2)
+                time.sleep(1)
                 self.page.quit()
