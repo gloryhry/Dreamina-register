@@ -4,6 +4,7 @@ from typing import Optional
 from DrissionPage import ChromiumPage, ChromiumOptions
 from tempmail.base import TempMailBase
 from utils.password import generate_password
+from utils.proxy_extension import create_proxy_auth_extension
 from config import Config
 
 class DreaminaRegister:
@@ -22,7 +23,9 @@ class DreaminaRegister:
             options.headless()
         
         if self.proxy_url:
-            options.set_proxy(self.proxy_url)
+            print(f"配置代理插件: {self.proxy_url}")
+            proxy_plugin_path = create_proxy_auth_extension(self.proxy_url)
+            options.add_extension(proxy_plugin_path)
         
         options.set_argument('--blink-settings=imagesEnabled=false')
         options.set_argument('--disable-images')

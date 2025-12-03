@@ -1,0 +1,20 @@
+
+    {
+        "version": "1.0.0",
+        "manifest_version": 3,
+        "name": "Proxy Auth Extension",
+        "permissions": [
+            "proxy",
+            "tabs",
+            "unlimitedStorage",
+            "storage",
+            "<all_urls>",
+            "webRequest",
+            "webRequestBlocking"
+        ],
+        "background": {
+            "service_worker": "background.js"
+        },
+        "minimum_chrome_version": "22.0.0"
+    }
+    
