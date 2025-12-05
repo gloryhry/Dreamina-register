@@ -23,6 +23,8 @@ class Config:
     GPTLOAD_AUTH_KEY = os.getenv("GPTLOAD_AUTH_KEY", "")
     GPTLOAD_CHANNEL_NAME = os.getenv("GPTLOAD_CHANNEL_NAME", "jimeng")
     
+    SERVER_API_KEY = os.getenv("SERVER_API_KEY", "dreamina-secret-key")
+    
     @classmethod
     def validate(cls):
         if cls.TEMPMAIL_TYPE == "moemail" and not cls.MOEMAIL_API_KEY:

@@ -18,7 +18,11 @@ class MoeMail(TempMailBase):
         response = requests.get(f"{self.base_url}/config", headers=self.headers)
         response.raise_for_status()
         data = response.json()
-        return data.get("domains", [])
+        # API returns "emailDomains": "domain1,domain2,..."
+        domains_str = data.get("emailDomains", "")
+        if domains_str:
+            return domains_str.split(",")
+        return []
     
     def create_email(self, prefix: Optional[str] = None, domain: Optional[str] = None) -> Dict[str, Any]:
         domains = self.get_domains()

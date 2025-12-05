@@ -3,6 +3,8 @@ import zipfile
 import shutil
 from urllib.parse import urlparse
 
+import uuid
+
 def create_proxy_auth_extension(proxy_url, plugin_path=None):
     """
     创建一个Chrome插件来处理代理认证和SOCKS5代理
@@ -18,11 +20,18 @@ def create_proxy_auth_extension(proxy_url, plugin_path=None):
     password = parsed.password
 
     if not plugin_path:
-        plugin_path = os.path.join(os.getcwd(), "proxy_auth_plugin")
+        plugin_path = os.path.join(os.getcwd(), f"proxy_auth_plugin_{uuid.uuid4()}")
 
     if os.path.exists(plugin_path):
-        shutil.rmtree(plugin_path)
-    os.makedirs(plugin_path)
+        try:
+            shutil.rmtree(plugin_path)
+        except Exception:
+            pass
+            
+    try:
+        os.makedirs(plugin_path, exist_ok=True)
+    except FileExistsError:
+        pass
 
     manifest_json = """
     {
