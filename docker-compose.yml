@@ -17,6 +17,12 @@ services:
       - ./data:/app/src/data
     # 共享内存大小（Chromium 需要）
     shm_size: '2gb'
+    # 日志配置：分片并保留最近5个
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
     # 健康检查
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]

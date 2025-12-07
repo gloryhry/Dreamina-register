@@ -30,6 +30,10 @@ class DreaminaRegister:
         
         if Config.HEADLESS:
             options.headless()
+            # Docker/Linux 环境必须添加的参数
+            options.set_argument('--no-sandbox')
+            options.set_argument('--disable-dev-shm-usage')
+            options.set_argument('--disable-gpu')
         
         if self.proxy_url:
             print(f"配置代理插件: {self.proxy_url}")
