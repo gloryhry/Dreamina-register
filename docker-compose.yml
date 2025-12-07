@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  dreamina-register:
+    build: .
+    image: ghcr.io/gloryhry/dreamina-register:latest
+    container_name: dreamina-register
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - HEADLESS=true
+    volumes:
+      # 持久化账号数据
+      - ./data:/app/src/data
+    # 共享内存大小（Chromium 需要）
+    shm_size: '2gb'
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

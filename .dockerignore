@@ -1,0 +1,36 @@
+# Git
+.git
+.gitignore
+
+# Python
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info
+.eggs
+
+# 环境配置（运行时挂载）
+.env
+
+# 数据文件
+*.txt
+data/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# 文档和其他
+*.md
+!README.md
+.ai_memory
+monitor.txt
+
+# 临时文件
+user_data_*
+proxy_auth_plugin

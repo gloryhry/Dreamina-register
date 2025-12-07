@@ -7,6 +7,7 @@
 - [功能特性](#功能特性)
 - [环境要求](#环境要求)
 - [快速开始](#快速开始)
+- [Docker 部署](#docker-部署)
 - [配置说明](#配置说明)
 - [使用指南](#使用指南)
 - [API 文档](#api-文档)
@@ -74,6 +75,97 @@ uv run uvicorn server:app --host 0.0.0.0 --port 8000
 ```powershell
 uv run python src/main.py
 ```
+
+## Docker 部署
+
+项目支持通过 Docker 容器化部署，适合服务器环境和持续集成场景。
+
+### 使用 Docker Compose（推荐）
+
+这是最简单的部署方式，一键启动所有服务。
+
+#### 1. 准备配置文件
+
+```bash
+# 复制环境变量模板
+cp .env.example .env
+
+# 编辑配置文件，填写必要的 API Key
+# 特别注意：HEADLESS 会在容器中自动设为 true
+```
+
+#### 2. 启动服务
+
+```bash
+# 构建并启动服务（后台运行）
+docker-compose up -d
+
+# 查看运行状态
+docker-compose ps
+
+# 查看实时日志
+docker-compose logs -f
+```
+
+#### 3. 管理服务
+
+```bash
+# 停止服务
+docker-compose down
+
+# 重新构建（代码更新后）
+docker-compose up -d --build
+
+# 查看服务健康状态
+docker-compose ps
+```
+
+#### 4. 数据持久化
+
+- 账号数据保存在 `./data/` 目录（自动挂载）
+- 配置通过 `.env` 文件加载（运行时挂载）
+
+### 使用预构建镜像
+
+从 GitHub Container Registry (GHCR) 拉取官方镜像：
+
+```bash
+# 拉取最新镜像
+docker pull ghcr.io/gloryhry/dreamina-register:latest
+
+# 运行容器
+docker run -d \
+  --name dreamina-register \
+  -p 8000:8000 \
+  --env-file .env \
+  --shm-size=2g \
+  ghcr.io/gloryhry/dreamina-register:latest
+```
+
+### 手动构建镜像
+
+如需自定义构建：
+
+```bash
+# 构建镜像
+docker build -t dreamina-register:custom .
+
+# 运行容器
+docker run -d \
+  --name dreamina-register \
+  -p 8000:8000 \
+  --env-file .env \
+  --shm-size=2g \
+  dreamina-register:custom
+```
+
+### Docker 部署注意事项
+
+> [!IMPORTANT]
+> **共享内存大小**：Chromium 需要较大的共享内存，建议设置 `--shm-size=2g` 或在 docker-compose.yml 中配置 `shm_size: '2gb'`。
+
+> [!NOTE]
+> **镜像大小**：由于包含 Chromium 浏览器，完整镜像约 1GB+。首次拉取/构建需要较长时间。
 
 ## 配置说明
 
