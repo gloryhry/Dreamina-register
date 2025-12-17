@@ -1,5 +1,6 @@
 import requests
 import random
+import string
 import time
 from typing import Optional, List, Dict, Any
 from .base import TempMailBase
@@ -33,7 +34,9 @@ class MoeMail(TempMailBase):
             domain = random.choice(domains)
         
         if prefix is None:
-            prefix = f"user{random.randint(100000, 999999)}"
+            chars = string.ascii_letters + string.digits
+            length = random.randint(5, 10)
+            prefix = ''.join(random.choice(chars) for _ in range(length))
         
         payload = {
             "name": prefix,
