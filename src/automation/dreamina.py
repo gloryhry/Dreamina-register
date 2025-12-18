@@ -2,6 +2,7 @@ import time
 import random
 import os
 import shutil
+import json
 from typing import Optional
 from DrissionPage import ChromiumPage, ChromiumOptions
 from tempmail.base import TempMailBase
@@ -165,9 +166,95 @@ class DreaminaRegister:
         
         print("步骤11-14完成")
     
+    def _get_region_prefix(self, location_code: str) -> str:
+        """
+        根据 location code 返回对应的区域前缀
+        支持的区域: HK -> hk-, JP -> jp-, SG -> sg-, 其他 -> us-
+        """
+        code_to_prefix = {
+            "HK": "hk-",
+            "JP": "jp-",
+            "SG": "sg-",
+            "US": "us-"
+        }
+        return code_to_prefix.get(location_code.upper(), "us-")
+    
+    def _get_region_from_network(self, timeout: int = 30) -> str:
+        """
+        通过监听网络请求获取账户区域
+        拦截 https://dreamina.capcut.com/lv/v1/user/web/user_info 的响应
+        返回区域前缀
+        """
+        print("监听网络请求以获取账户区域...")
+        target_url = "dreamina.capcut.com/lv/v1/user/web/user_info"
+        start_time = time.time()
+        
+        # 启用网络监听
+        self.page.listen.start(target_url)
+        
+        region_prefix = "us-"  # 默认区域
+        
+        try:
+            while time.time() - start_time < timeout:
+                # 等待目标请求
+                res = self.page.listen.wait(timeout=timeout - (time.time() - start_time))
+                if res:
+                    try:
+                        # 获取响应体
+                        response_body = res.response.body
+                        if isinstance(response_body, str):
+                            data = json.loads(response_body)
+                        else:
+                            data = response_body
+                        
+                        # 解析 location.code
+                        if "data" in data and "location" in data["data"]:
+                            location_code = data["data"]["location"].get("code", "")
+                            if location_code:
+                                region_prefix = self._get_region_prefix(location_code)
+                                print(f"检测到账户区域: {location_code} -> 前缀: {region_prefix}")
+                            break
+                    except (json.JSONDecodeError, KeyError, TypeError) as e:
+                        print(f"解析 user_info 响应失败: {e}")
+                        break
+                else:
+                    break
+        finally:
+            self.page.listen.stop()
+        
+        return region_prefix
+    
     def step_15_to_16(self, output_file: str = "key.txt", account_file: str = "account.txt"):
         print("步骤15: 等待页面跳转并获取Cookie...")
+        
+        # 启用网络监听以获取区域信息
+        target_url = "dreamina.capcut.com/lv/v1/user/web/user_info"
+        self.page.listen.start(target_url)
+        
+        region_prefix = "us-"  # 默认区域
+        
         continue_ = self.page.ele("text=What role best describes you?", timeout=30)
+        
+        # 尝试获取 user_info 响应中的区域信息
+        try:
+            res = self.page.listen.wait(timeout=5)
+            if res:
+                try:
+                    response_body = res.response.body
+                    if isinstance(response_body, str):
+                        data = json.loads(response_body)
+                    else:
+                        data = response_body
+                    
+                    if "data" in data and "location" in data["data"]:
+                        location_code = data["data"]["location"].get("code", "")
+                        if location_code:
+                            region_prefix = self._get_region_prefix(location_code)
+                            print(f"检测到账户区域: {location_code} -> 前缀: {region_prefix}")
+                except (json.JSONDecodeError, KeyError, TypeError) as e:
+                    print(f"解析 user_info 响应失败: {e}, 使用默认区域前缀 us-")
+        finally:
+            self.page.listen.stop()
         
         cookies = self.page.cookies()
         sessionid = None
@@ -183,7 +270,7 @@ class DreaminaRegister:
         print(f"获取到sessionid: {sessionid}")
         
         print("步骤16: 保存到key.txt...")
-        formatted_sessionid = f"us-{sessionid}"
+        formatted_sessionid = f"{region_prefix}{sessionid}"
         
         with open(output_file, "a", encoding="utf-8") as f:
             f.write(formatted_sessionid + "\n")
@@ -335,6 +422,13 @@ class DreaminaRegister:
 
             # 步骤7: 等待 SessionID
             print("步骤7: 等待页面跳转并获取Cookie...")
+            
+            # 启用网络监听以获取区域信息
+            target_url = "dreamina.capcut.com/lv/v1/user/web/user_info"
+            self.page.listen.start(target_url)
+            
+            region_prefix = "us-"  # 默认区域
+            
             start_time = time.time()
             sessionid = None
             expires = None
@@ -350,6 +444,27 @@ class DreaminaRegister:
                     break
                 time.sleep(1)
             
+            # 尝试获取 user_info 响应中的区域信息
+            try:
+                res = self.page.listen.wait(timeout=5)
+                if res:
+                    try:
+                        response_body = res.response.body
+                        if isinstance(response_body, str):
+                            data = json.loads(response_body)
+                        else:
+                            data = response_body
+                        
+                        if "data" in data and "location" in data["data"]:
+                            location_code = data["data"]["location"].get("code", "")
+                            if location_code:
+                                region_prefix = self._get_region_prefix(location_code)
+                                print(f"检测到账户区域: {location_code} -> 前缀: {region_prefix}")
+                    except (json.JSONDecodeError, KeyError, TypeError) as e:
+                        print(f"解析 user_info 响应失败: {e}, 使用默认区域前缀 us-")
+            finally:
+                self.page.listen.stop()
+            
             if not sessionid:
                 # 尝试检查是否有错误提示
                 error_msg = self.page.ele(".lv-message")
@@ -364,7 +479,7 @@ class DreaminaRegister:
             return {
                 "email": email,
                 "password": password,
-                "session_id": f"us-{sessionid}",
+                "session_id": f"{region_prefix}{sessionid}",
                 "expires": expires
             }
 

@@ -84,6 +84,13 @@
 
             # 步骤7: 等待 SessionID
             print("步骤7: 等待页面跳转并获取Cookie...")
+            
+            # 启用网络监听以获取区域信息
+            target_url = "dreamina.capcut.com/lv/v1/user/web/user_info"
+            self.page.listen.start(target_url)
+            
+            region_prefix = "us-"  # 默认区域
+            
             # 等待 url 变化或者特定的元素出现，这里参考 js 逻辑等待 url 包含 dreamina.capcut.com
             # DrissionPage 的 wait.url_change 也许可用，或者循环检查
             start_time = time.time()
@@ -101,6 +108,28 @@
                     break
                 time.sleep(1)
             
+            # 尝试获取 user_info 响应中的区域信息
+            try:
+                res = self.page.listen.wait(timeout=5)
+                if res:
+                    try:
+                        import json
+                        response_body = res.response.body
+                        if isinstance(response_body, str):
+                            data = json.loads(response_body)
+                        else:
+                            data = response_body
+                        
+                        if "data" in data and "location" in data["data"]:
+                            location_code = data["data"]["location"].get("code", "")
+                            if location_code:
+                                region_prefix = self._get_region_prefix(location_code)
+                                print(f"检测到账户区域: {location_code} -> 前缀: {region_prefix}")
+                    except (json.JSONDecodeError, KeyError, TypeError) as e:
+                        print(f"解析 user_info 响应失败: {e}, 使用默认区域前缀 us-")
+            finally:
+                self.page.listen.stop()
+            
             if not sessionid:
                 # 尝试检查是否有错误提示
                 error_msg = self.page.ele(".lv-message")
@@ -115,7 +144,7 @@
             return {
                 "email": email,
                 "password": password,
-                "session_id": f"us-{sessionid}",
+                "session_id": f"{region_prefix}{sessionid}",
                 "expires": expires
             }
 
