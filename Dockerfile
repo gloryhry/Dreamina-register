@@ -27,10 +27,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean \
     # 下载并安装 gost (用于 SOCKS5 代理认证中转)
-    && curl -fsSL "https://github.com/ginuerzh/gost/releases/download/v${GOST_VERSION}/gost-linux-amd64-${GOST_VERSION}.gz" -o /tmp/gost.gz \
-    && gunzip /tmp/gost.gz \
+    && curl -fsSL "https://github.com/ginuerzh/gost/releases/download/v${GOST_VERSION}/gost_${GOST_VERSION}_linux_amd64.tar.gz" -o /tmp/gost.tar.gz \
+    && tar -xzf /tmp/gost.tar.gz -C /tmp \
     && mv /tmp/gost /usr/local/bin/gost \
     && chmod +x /usr/local/bin/gost \
+    && rm /tmp/gost.tar.gz \
     && echo "gost installed: $(/usr/local/bin/gost -V)"
 
 # 安装 uv 包管理器
