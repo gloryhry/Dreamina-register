@@ -203,6 +203,22 @@ GPTLOAD_CHANNEL_NAME=jimeng
 SERVER_API_KEY=dreamina-secret-key
 ```
 
+### 代理配置注意事项
+
+> [!IMPORTANT]
+> **SOCKS5 认证代理**：Chrome 浏览器不原生支持带用户名/密码认证的 SOCKS5 代理。
+> 
+> **Docker 部署时**：容器会自动启动 `gost` 代理中转服务，将认证代理转换为本地无认证代理，无需额外配置。
+> 
+> **本地开发时**：如需使用 SOCKS5 认证代理，请手动运行 gost 进行中转：
+> ```bash
+> # 下载 gost: https://github.com/ginuerzh/gost/releases
+> gost -L :1080 -F socks5://user:pass@host:port
+> 
+> # 然后修改 .env
+> PROXY_URL=socks5://127.0.0.1:1080
+> ```
+
 ## 使用指南
 
 ### 1. 命令行运行

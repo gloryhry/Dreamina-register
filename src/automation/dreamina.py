@@ -7,7 +7,6 @@ from typing import Optional
 from DrissionPage import ChromiumPage, ChromiumOptions
 from tempmail.base import TempMailBase
 from utils.password import generate_password
-from utils.proxy_extension import create_proxy_auth_extension
 from config import Config
 
 class DreaminaRegister:
@@ -17,7 +16,6 @@ class DreaminaRegister:
         self.page = None
         self.email_address = None
         self.password = None
-        self.proxy_plugin_path = None
         self.user_data_path = None
         
     def init_browser(self):
@@ -37,9 +35,28 @@ class DreaminaRegister:
             options.set_argument('--disable-gpu')
         
         if self.proxy_url:
-            print(f"配置代理插件: {self.proxy_url}")
-            self.proxy_plugin_path = create_proxy_auth_extension(self.proxy_url)
-            options.add_extension(self.proxy_plugin_path)
+            print(f"配置代理: {self.proxy_url}")
+            from urllib.parse import urlparse
+            parsed = urlparse(self.proxy_url)
+            scheme = parsed.scheme
+            host = parsed.hostname
+            port_num = parsed.port
+            
+            # 处理协议映射
+            scheme_map = {
+                "socks5h": "socks5",
+                "socks5": "socks5", 
+                "socks4": "socks4",
+                "http": "http",
+                "https": "https",
+            }
+            chrome_scheme = scheme_map.get(scheme, scheme)
+            
+            # 使用命令行参数设置代理
+            # Docker 环境中 PROXY_URL 已被入口脚本替换为本地无认证代理
+            proxy_server = f"{chrome_scheme}://{host}:{port_num}"
+            options.set_argument(f'--proxy-server={proxy_server}')
+            print(f"使用代理: {proxy_server}")
         
         options.set_argument('--blink-settings=imagesEnabled=false')
         options.set_argument('--disable-images')
@@ -320,12 +337,7 @@ class DreaminaRegister:
                     self.page.quit()
                 except:
                     pass
-            
-            if self.proxy_plugin_path and os.path.exists(self.proxy_plugin_path):
-                try:
-                    shutil.rmtree(self.proxy_plugin_path)
-                except Exception as e:
-                    print(f"Clean up proxy plugin failed: {e}")
+
 
             if self.user_data_path and os.path.exists(self.user_data_path):
                 for i in range(10):
@@ -492,12 +504,7 @@ class DreaminaRegister:
                     self.page.quit()
                 except:
                     pass
-            
-            if self.proxy_plugin_path and os.path.exists(self.proxy_plugin_path):
-                try:
-                    shutil.rmtree(self.proxy_plugin_path)
-                except Exception as e:
-                    print(f"Clean up proxy plugin failed: {e}")
+
 
             if self.user_data_path and os.path.exists(self.user_data_path):
                 for i in range(10):

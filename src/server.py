@@ -29,15 +29,6 @@ async def startup_event():
                 print(f"Cleaned up stale directory: {path}")
         except Exception as e:
             print(f"Failed to cleanup {path}: {e}")
-            
-    # Clean up stale proxy plugins
-    for path in glob.glob(os.path.join(os.getcwd(), "proxy_auth_plugin_*")):
-        try:
-            if os.path.isdir(path):
-                shutil.rmtree(path)
-                print(f"Cleaned up stale proxy plugin: {path}")
-        except Exception as e:
-            print(f"Failed to cleanup proxy plugin {path}: {e}")
 
 # --- In-Memory Task Store ---
 tasks: Dict[str, Dict[str, Any]] = {}
