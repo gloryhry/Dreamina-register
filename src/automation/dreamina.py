@@ -71,13 +71,20 @@ class DreaminaRegister:
         print(f"页面标题: {self.page.title}")
         
         print("步骤2: 点击Sign in按钮...")
-        sign_in_btn = self.page.ele("text=Create", timeout=30)
+        print("步骤2: 点击Sign in按钮...")
+        # 优先使用可靠的 ID 选择器
+        sign_in_btn = self.page.ele("#SiderMenuLogin", timeout=30)
+        
         if not sign_in_btn:
-            print("尝试备用定位...")
-            sign_in_btn = self.page.ele("text=Sign in", timeout=30)
+             # 尝试备用定位
+             print("尝试备用定位...")
+             sign_in_btn = self.page.ele("text=Sign in", timeout=10)
+             if not sign_in_btn:
+                 sign_in_btn = self.page.ele("text=Create", timeout=10)
         
         if sign_in_btn:
-            print("找到Sign in按钮")
+            # 确保按钮可见并可交互
+            print(f"找到Sign in按钮: {sign_in_btn.html[:50]}...")
             sign_in_btn.click()
             # time.sleep(1)
         else:
@@ -366,30 +373,31 @@ class DreaminaRegister:
             print(f"页面标题: {self.page.title}")
 
             # 步骤2: 点击 Create 或 Sign in
-            print("步骤2: 查找并点击 Create 或 Sign in...")
-            create_btn = self.page.ele("text=Create", timeout=30)
-            if not create_btn:
-                # 尝试其他 Create 选择器
-                create_btn = self.page.ele("@@role=menuitem@@text()=Create", timeout=5)
+            # 步骤2: 点击 Create 或 Sign in
+            print("步骤2: 查找并点击 Sign in / Create...")
             
-            if create_btn:
-                print("找到 Create 按钮")
-                create_btn.click()
+            # 优先尝试 ID 选择器
+            login_btn = self.page.ele("#SiderMenuLogin", timeout=30)
+            
+            if login_btn:
+                print("找到登录按钮 (ID: SiderMenuLogin)")
+                login_btn.click()
                 time.sleep(1)
             else:
-                print("尝试 Sign in 按钮...")
-                sign_in_types = ["text=Sign in", "@@role=menuitem@@text()=Sign in", "@class:login", "text:Sign in"]
-                sign_in_btn = None
-                for selector in sign_in_types:
-                    sign_in_btn = self.page.ele(selector, timeout=3)
-                    if sign_in_btn:
-                        print(f"找到 Sign in 按钮 ({selector})")
+                print("尝试备用选择器...")
+                alternatives = ["text=Create", "text=Sign in", "@@role=menuitem@@text()=Create"]
+                found_btn = None
+                for selector in alternatives:
+                    found_btn = self.page.ele(selector, timeout=3)
+                    if found_btn:
+                        print(f"找到按钮 ({selector})")
                         break
                 
-                if sign_in_btn:
-                    sign_in_btn.click()
+                if found_btn:
+                    found_btn.click()
+                    time.sleep(1)
                 else:
-                    raise ValueError("无法找到 Create 或 Sign in 按钮")
+                    raise ValueError("无法找到 Sign in 或 Create 按钮")
             
             # 步骤3: Continue with email
             print("步骤3: 点击 Continue with email...")
