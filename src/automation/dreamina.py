@@ -70,10 +70,21 @@ class DreaminaRegister:
         
         print(f"页面标题: {self.page.title}")
         
+        print(f"页面标题: {self.page.title}")
+        print("等待DOM加载完成...")
+        self.page.wait.doc_loaded()
+        
         print("步骤2: 点击Sign in按钮...")
-        print("步骤2: 点击Sign in按钮...")
+        # 增加超时到 60s，应对慢速加载
         # 优先使用可靠的 ID 选择器
-        sign_in_btn = self.page.ele("#SiderMenuLogin", timeout=30)
+        sign_in_btn = self.page.ele("#SiderMenuLogin", timeout=60)
+        
+        # 检查是否已经登录 (存在 #Personal 元素)
+        if not sign_in_btn:
+            if self.page.ele("#Personal", timeout=2):
+                print("检测到已存在 #Personal 元素，可能已登录")
+                # 这里可能需要抛出特殊异常或根据业务逻辑处理，目前先记录日志
+                time.sleep(10)
         
         if not sign_in_btn:
              # 尝试备用定位
@@ -88,7 +99,10 @@ class DreaminaRegister:
             sign_in_btn.click()
             # time.sleep(1)
         else:
-            raise ValueError("无法找到Sign in按钮")
+            # 打印详细诊断信息
+            print(f"ERROR: 无法找到 Sign in 按钮。当前页面标题: '{self.page.title}'")
+            print(f"当前URL: {self.page.url}")
+            raise ValueError(f"无法找到Sign in按钮 (Title: {self.page.title})")
         
         print("步骤3: 点击Continue with email...")
         for i in range(3):
@@ -376,8 +390,17 @@ class DreaminaRegister:
             # 步骤2: 点击 Create 或 Sign in
             print("步骤2: 查找并点击 Sign in / Create...")
             
-            # 优先尝试 ID 选择器
-            login_btn = self.page.ele("#SiderMenuLogin", timeout=30)
+            # 等待DOM加载
+            self.page.wait.doc_loaded()
+            
+            # 优先尝试 ID 选择器，超时增加到 60s
+            login_btn = self.page.ele("#SiderMenuLogin", timeout=60)
+            
+            # 检查是否已登录
+            if not login_btn:
+                 if self.page.ele("#Personal", timeout=2):
+                     print("检测到已登录状态 (#Personal)")
+                     # 可以选择直接返回 session 或进行其他处理
             
             if login_btn:
                 print("找到登录按钮 (ID: SiderMenuLogin)")
@@ -388,7 +411,7 @@ class DreaminaRegister:
                 alternatives = ["text=Create", "text=Sign in", "@@role=menuitem@@text()=Create"]
                 found_btn = None
                 for selector in alternatives:
-                    found_btn = self.page.ele(selector, timeout=3)
+                    found_btn = self.page.ele(selector, timeout=5)
                     if found_btn:
                         print(f"找到按钮 ({selector})")
                         break
@@ -397,7 +420,8 @@ class DreaminaRegister:
                     found_btn.click()
                     time.sleep(1)
                 else:
-                    raise ValueError("无法找到 Sign in 或 Create 按钮")
+                    print(f"ERROR: 无法找到登录入口。Title: '{self.page.title}'")
+                    raise ValueError(f"无法找到 Sign in 或 Create 按钮 (Title: {self.page.title})")
             
             # 步骤3: Continue with email
             print("步骤3: 点击 Continue with email...")
